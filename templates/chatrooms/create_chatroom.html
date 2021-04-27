@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block head_content %}
+<title>FinChat Create room</title>
+{% endblock %}
+
+{% block container %}
+
+    {% if error %}
+        <p class="alert alert-danger">{{ error }}</p>
+    {% endif %}
+
+    <form action="{% url 'chatrooms:create_room' %}" method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-primary btn-block mt-5" type="submit">Create Chatroom!</button>
+    </form>
+
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block head_content %}
+<title>FinChat</title>
+{% endblock %}
+
+{% block container %}
+
+    {% if error %}
+        <p class="alert alert-danger">{{ error }}</p>
+    {% endif %}
+
+<div class="page-content page-container" id="page-content">
+    <div class="padding">
+        <div class="row container d-flex justify-content-center">
+            <div class="col-md-6">
+                <div class="card card-bordered">
+                    <div class="card-header">
+                        <h4 class="card-title"><strong>Chat</strong></h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="ps-container ps-theme-default ps-active-y" id="chat-content">
+                            <textarea id="chat-log" class="form-control z-depth-1" id="exampleFormControlTextarea6" rows="10" style="align-content: flex-start" disabled>
+                                {% for msg in messages %}
+                                    {{ msg.user }}: {{ msg }}
+                                {% endfor %}
+                            </textarea>
+                            <br>
+                            <input type="email" class="form-control" id="chat-message-input" aria-describedby="emailHelp" placeholder="Write something">
+                            <br>
+                            <input id="chat-message-submit" type="button" value="Send">
+                            {{ room_id |json_script:"room-name" }}
+                            {{ user |json_script:"user" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script>
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+        const user = JSON.parse(document.getElementById('user').textContent);
+
+        const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chatrooms/'
+            + roomName
+            + '/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            console.log('DATA', data)
+            document.querySelector('#chat-log').value += (data.user + ': ' + data.message + '\n');
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            if (message.length >= 0) {
+                if (message.startsWith('/stock=')) {
+                    $.ajax(
+                    {
+                        type:"GET",
+                        url: `/bots/search/${roomName}/${message.substring(7)}`,
+                    });
+                }
+                chatSocket.send(JSON.stringify({
+                    'message': message,
+                    'user': user
+                }));
+                messageInputDom.value = '';
+            }
+        };
+    </script>
+{% endblock %}

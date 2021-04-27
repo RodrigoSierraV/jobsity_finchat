@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block head_content %}
+<title>FinChat Create room</title>
+{% endblock %}
+
+{% block container %}
+
+    {% if error %}
+        <p class="alert alert-danger">{{ error }}</p>
+    {% endif %}
+    <table class="table table-hover table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Creator</th>
+            <th scope="col">Join</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for chatroom in chatrooms_list %}
+              <tr>
+                <th scope="row">{{ chatroom.name }}</th>
+                <td>{{ chatroom.creator }}</td>
+                <td><button type="button" class="btn btn-primary" onclick="location.href='/chatrooms/{{ chatroom.name }}'">Go</button></td>
+              </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+{% endblock %}
